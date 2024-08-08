@@ -1,28 +1,25 @@
 #!/usr/bin/python3
-"""
-Minimum Operations
-"""
-import math
-
-
-def get_largest_factor(n):
-    """
-    returns the largest factor of a number number itself
-    """
-    for i in range(2, int(math.sqrt(n)) + 1):
-        if n % i == 0:
-            return n // i
-    return 1
+""" 0-minoperations"""
 
 
 def minOperations(n):
     """
-    returns the minium number of operations required to generate n consecutive
-    'H' characters 
+    minOperations
+    Gets fewest # of operations needed to result in exactly n H characters
     """
-    if n <= 1:
+    # all outputs should be at least 2 char: (min, Copy All => Paste)
+    if (n < 2):
         return 0
-    largest_factor = get_largest_factor(n)
-    if largest_factor == 1:
-        return n
-    return n // largest_factor + minOperations(largest_factor)
+    ops, root = 0, 2
+    while root <= n:
+        # if n evenly divides by root
+        if n % root == 0:
+            # total even-divisions by root = total operations
+            ops += root
+            # set n to the remainder
+            n = n / root
+            # reduce root to find remaining smaller vals that evenly-divide n
+            root -= 1
+        # increment root until it evenly-divides n
+        root += 1
+    return ops

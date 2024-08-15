@@ -1,65 +1,53 @@
-!/usr/bin/python3
-"""
-A script that reads stdin line by line and computes metrics
-"""
+#!/usr/bin/python3
+
 import sys
 
-status_codes = {200: 0, 301: 0, 400: 0, 401: 0, 403: 0, 404: 0, 405: 0, 500: 0}
-file_size = 0
-count = 0
 
-
-def parse_line(line):
+def print_msg(dict_sc, total_file_size):
     """
-    pareses a line of with the format:
-    <IP Address> - [<date>] "GET /projects/260 HTTP/1.1" <status code>
-    <file size>
-    if the line is not with the above format returns None
+    Args:
+        dict_sc: dict of status codes
+        total_file_size: total file
+    Returns:
+        Nothing
     """
-    if len(line.split()) < 2:
-        return None
-    size = 0
-    status_code = None
 
-    try:
-        size = int(line.split()[-1])
-        status_code = int(line.split()[-2])
-
-        if status_code not in status_codes:
-            status_code = None
-    finally:
-        return {
-            "status_code": status_code,
-            "file_size": size,
-        }
+    print("File size: {}".format(total_file_size))
+    for key, val in sorted(dict_sc.items()):
+        if val != 0:
+            print("{}: {}".format(key, val))
 
 
-def print_stats():
-    """
-    prints the stats
-    """
-    print("File size: {}".format(file_size))
-    for k, v in sorted(status_codes.items()):
-        if v > 0:
-            print("{}: {}".format(k, v))
+total_file_size = 0
+code = 0
+counter = 0
+dict_sc = {"200": 0,
+           "301": 0,
+           "400": 0,
+           "401": 0,
+           "403": 0,
+           "404": 0,
+           "405": 0,
+           "500": 0}
 
+try:
+    for line in sys.stdin:
+        parsed_line = line.split()  # ✄ trimming
+        parsed_line = parsed_line[::-1]  # inverting
 
-if __name__ == "__main__":
-    try:
-        for line in sys.stdin:
-            if count == 10:
-                print_stats()
-                count = 0
+        if len(parsed_line) > 2:
+            counter += 1
 
-            stat = parse_line(line)
-            if stat is not None:
-                if stat["status_code"] is not None:
-                    status_codes[stat["status_code"]] += 1
-                file_size += stat["file_size"]
-                count += 1
+            if counter <= 10:
+                total_file_size += int(parsed_line[0])  # file size
+                code = parsed_line[1]  # status code
 
-    except KeyboardInterrupt:
-        print_stats()
-        raise
+                if (code in dict_sc.keys()):
+                    dict_sc[code] += 1
 
-    print_stats()
+            if (counter == 10):
+                print_msg(dict_sc, total_file_size)
+                counter = 0
+
+finally:
+    print_msg(dict_sc, total_file_size)
